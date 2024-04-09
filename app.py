@@ -26,7 +26,7 @@ retriever = Retriever.get_retriever()
 def auth_callback(username: str, password: str):
     # Here you would typically query your database or some other service to verify the credentials
     # For demonstration purposes, I'm using hardcoded credentials
-    if (username, password) == ("admin", "admin"):
+    if (username, password) == ("trosy@evertz.com", "admin"):
         return cl.User(
             identifier="admin", metadata={"role": "admin", "provider": "credentials"}
         )

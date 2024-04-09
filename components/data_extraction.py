@@ -7,6 +7,8 @@ from logger import logger
 import datetime
 import requests
 from dateutil import parser
+from bs4 import BeautifulSoup
+from langchain.document_transformers import Html2TextTransformer
  
 class DataLoader:
     @staticmethod
@@ -84,14 +86,36 @@ class DataLoader:
             logger.error(f"Error loading word '{file_path}': {e}")
         return data,date
  
- 
+class WebScrapping:
+    @staticmethod
+    def web_scrapping(sublinks):
+        try:
+            loader=AsyncHtmlLoader(sublinks)
+            data=loader.load()
+            date=DataLoader.get_url_modified_date(sublinks)
+        except Exception as e:
+            logger.error(f"Error loading URL '{sublinks}': {e}")
+        return data,date
  
     @staticmethod
-    def web_scrapping(urls):
-        try:
-            loader=AsyncHtmlLoader(urls)
-            data=loader.load()
-            date=DataLoader.get_url_modified_date(urls)
-        except Exception as e:
-            logger.error(f"Error loading URL '{urls}': {e}")
-        return data,date
+    def getdata(url):
+        r = requests.get(url)
+        return r.text
+ 
+    @staticmethod
+    def get_links(website_link):
+        list_links = []
+        for i in website_link:
+            html_data = WebScrapping.getdata(i)
+            soup = BeautifulSoup(html_data, "html.parser")
+            for link in soup.find_all("a", href=True):
+                # Append to list if new link contains original link
+                if str(link["href"]).startswith((str(i))):
+                    list_links.append(link["href"])
+ 
+                # Include all href that do not start with website link but with "/"
+                if str(link["href"]).startswith("/"):
+                    link_with_www = i + link["href"][1:]
+                    list_links.append(link_with_www)
+ 
+        return list_links

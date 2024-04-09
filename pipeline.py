@@ -1,4 +1,4 @@
-from components.data_extraction import DataLoader
+from components.data_extraction import DataLoader,WebScrapping
 from utilities.config import DataConstants
 from components.data_splitting import DataSplitting
 from database.database_operation import DatabaseOperation
@@ -59,19 +59,19 @@ class Pipelinee:
                         Pipelinee.all_splits.append(splits)
                         unique_chunks = deduplication.deduplicate_chunks(splits, date)
                         print(len(unique_chunks))
-                       
+ 
                     else:
                         logger.error("Unsupported file type:", filename)  
-
-
+           
             urls=data_constants.URL
-            data,date=DataLoader.web_scrapping(urls)
+            sublinks=WebScrapping.get_links(urls)
+            data,date=WebScrapping.web_scrapping(sublinks)
             html2text = Html2TextTransformer()
             data_transformed= html2text.transform_documents(data)
             splits = DataSplitting.split_text(data_transformed, data_constants.max_chunk_size)
             Pipelinee.all_splits.append(splits)
             unique_chunks = deduplication.deduplicate_chunks(splits, date)
-
+ 
             DatabaseOperation.store_data(unique_chunks)  
             logger.info("Pipeline successfully executed")
        
